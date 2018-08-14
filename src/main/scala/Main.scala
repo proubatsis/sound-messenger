@@ -1,15 +1,6 @@
 object Main {
   def main(args : Array[String]) : Unit = {
-    val high = 1500
-    val low = 1000
-    val seconds = 0.25f
-    val iterations = 8
-    val beepBuilder = List.fill(iterations)(List(high, low))
-      .flatten
-      .foldLeft(BeepBuilder(low, seconds))((a, b) => a.addBeep(b, seconds))
-
-    val samplingRate = beepBuilder.samplingRate
-    val bytes = beepBuilder.build
-    JavaSoundPlayer.play(bytes, samplingRate)
+    val transmitter = new Transmitter with JavaSoundPlayer
+    transmitter.transmit(List(0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x21), secondsPerByte = 0.1f, step = 1000, low = 1000)
   }
 }

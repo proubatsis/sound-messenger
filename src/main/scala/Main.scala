@@ -1,4 +1,5 @@
 import javax.sound.sampled._
+import org.jtransforms.fft.DoubleFFT_1D
 
 object Main {
   def main(args : Array[String]) : Unit = {
@@ -17,20 +18,37 @@ object Main {
     val bytes = record(microphone, endTime)
     microphone.close()
 
-    val player = new JavaSoundPlayer {}
-    player.play(bytes, 44100)
+//    val player = new JavaSoundPlayer {}
+//    player.play(bytes, 44100)
+    val maxIndexes = bytes map fft map maxIndex
+    print(maxIndexes.mkString(", "))
   }
 
-  private def record(microphone : TargetDataLine, endTime : Long): Array[Byte] = {
+  private def record(microphone : TargetDataLine, endTime : Long): Array[Array[Byte]] = {
     val current = Array.ofDim[Byte](microphone.getBufferSize / 5)
     val bytesRead = microphone.read(current, 0, 1024)
 
     if (bytesRead < 0) {
-      Array()
+      Array(Array())
     } else if (System.currentTimeMillis < endTime) {
-      current.take(bytesRead) ++ record(microphone, endTime)
+      Array(current.take(bytesRead)) ++ record(microphone, endTime)
     } else {
-      current.take(bytesRead)
+      Array(current.take(bytesRead))
     }
+  }
+
+  private def fft(bytes : Array[Byte]) : Array[Double] = {
+    val doubles = bytes map (_.toDouble)
+    val fft = new DoubleFFT_1D(doubles.length)
+    val spectrum = Array.ofDim[Double](doubles.length * 2)
+    Array.copy(doubles, 0, spectrum, 0, doubles.length)
+    fft.realForwardFull(spectrum)
+    val reals = spectrum.zipWithIndex.filter(_._2 % 2 == 0).map(_._1)
+    val immaginaries = spectrum.zipWithIndex.filter(_._2 % 2 == 1).map(_._1)
+    reals.zip(immaginaries).map({ case (r, i) => Math.sqrt(r * r + i * i) })
+  }
+
+  private def maxIndex(spectrum : Array[Double]) : Int = {
+    spectrum.zipWithIndex.maxBy(_._1)._2
   }
 }

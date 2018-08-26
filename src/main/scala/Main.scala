@@ -1,3 +1,5 @@
+import java.nio.charset.StandardCharsets
+
 object Main {
   def main(args : Array[String]) : Unit = {
     //    val transmitter = new Transmitter with JavaSoundPlayer
@@ -10,7 +12,7 @@ object Main {
 
     var maxFreq = -1.0
     var frequencies = List.empty[Double]
-    while (maxFreq < 9000) {
+    while (maxFreq < (ctx.endValue - 1000)) {
       maxFreq = receiver.receiveFrequency()
       frequencies ++= List(maxFreq)
     }
@@ -20,6 +22,8 @@ object Main {
       case Some(bucket) => bucket
     } sliding 2 collect { case Seq(a, b) if a != b => b } toList
 
-    print(FrequencyDecoder.decode(recording, FrequencyBucket.createWithAbsVariation(1000, 50), FrequencyBucket.createWithAbsVariation(10000, 50), ctx.freqToNibble))
+
+    val decoded = FrequencyDecoder.decode(recording, FrequencyBucket.createWithAbsVariation(1000, 50), FrequencyBucket.createWithAbsVariation(15000, 50), ctx.freqToNibble)
+    println(new String(decoded.toArray, StandardCharsets.UTF_8))
   }
 }

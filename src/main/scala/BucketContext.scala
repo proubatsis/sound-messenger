@@ -1,4 +1,4 @@
-case class BucketContext(startingValue : Int = 1000, step : Int = 250, variation : Int = 50, endValue : Int = 10000) {
+case class BucketContext(startingValue : Int = 1000, step : Int = 250, variation : Int = 50, endValue : Int = 15000) {
   lazy val buckets : List[FrequencyBucket] = FrequencyBucket.createBuckets(startingValue, step, variation, 1000)
   lazy val freqToNibble : Map[FrequencyBucket, Byte] =
     FrequencyBucket.createBuckets(startingValue + step, step, variation, 16)
